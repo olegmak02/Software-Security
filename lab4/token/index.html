@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Token authentication page</title>
+        <style>
+            #form {
+                margin-left: 30%;
+                text-align: center;
+                align-content: center;
+                display:grid;
+                align-self: middle;
+                width: 40%;
+            };
+
+            button {
+                margin-top: 5%;
+                margin-left: 40%;
+                width: 20%;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="form">
+            <label>Login Form</label>
+            <label style="margin-top: 50px;">Login</label>
+            <input id="login_field" type="text">
+            <label style="margin-top: 20px;">Password</label>
+            <input id="password_field" type="text">
+            <button id="button" style="margin-top: 30px;">Login</button>
+        </div>
+
+        <div id="error_message" style="text-align: center;"></div>
+    </body>
+    
+    <script>
+        const form_div = document.getElementById("form");
+        const error_div = document.getElementById("error_message");
+
+        const STORAGE_KEY = "TOKEN_KEY";
+        const token = sessionStorage.getItem(STORAGE_KEY);
+
+        if (token) {
+            fetch("/", {
+                method: 'GET',
+                headers: {'Authorization': token},
+            })
+            .then(async d => {
+                const data = await d.json();
+                form_div.remove();
+                error_div.remove();
+
+                const logout_button = document.createElement("button");
+                logout_button.innerText = "Logout";
+                logout_button.addEventListener("click", e => {
+                    sessionStorage.removeItem(STORAGE_KEY);
+                    location.reload();
+                });
+
+                const main_info = document.createElement("div");
+                main_info.innerText = `Hello, ${data.login}`;
+                main_info.style.textAlign = "center";
+                main_info.style.fontSize = "30px";
+
+                document.body.appendChild(logout_button);
+                document.body.appendChild(main_info);
+            });
+        }
+
+        const login_field = document.getElementById("login_field");
+        const password_field = document.getElementById("password_field");
+        const button = document.getElementById("button");
+        
+        button.addEventListener("click", e => {
+            let login = login_field.value;
+            let password = password_field.value;
+
+            fetch("/login", {
+                method: 'POST',
+
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                },
+
+                body: JSON.stringify({login, password}), 
+            })
+            .then(async data => {
+                const res = await data.json();
+                sessionStorage.setItem(STORAGE_KEY, res.token);
+            })
+            .then(data => location.reload())
+            .catch(e => {
+                error_div.innerHTML = "Wrong login and/or password. Try again.";
+                error_div.style.marginTop = "70px";
+                error_div.style.color = "red";
+            });
+        })
+    </script>
+</html>
