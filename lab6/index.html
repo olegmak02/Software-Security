@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Token authentication page</title>
+        <style>
+            #form {
+                margin-left: 30%;
+                text-align: center;
+                align-content: center;
+                display:grid;
+                align-self: middle;
+                width: 40%;
+            };
+
+            button {
+                margin-top: 5%;
+                margin-left: 40%;
+                width: 20%;
+            }
+        </style>
+    </head>
+    <body>
+    </body>
+    
+    <script>
+        const token = document.cookie.split('; ').find((row) => row.startsWith("token="))?.split('=')[1];
+        if (token) {
+            fetch("/home", {
+                method: 'GET',
+                headers: {authorization: `Bearer ${token}`},
+            })
+            .then(async d => {
+                const data = await d.json();
+
+                const logout_button = document.createElement("button");
+                logout_button.innerText = "Logout";
+                logout_button.addEventListener("click", e => {
+                    document.cookie = "";
+                    location.reload();
+                });
+
+                const main_info = document.createElement("div");
+                main_info.innerText = `Hello, ${data.login}`;
+                main_info.style.textAlign = "center";
+                main_info.style.fontSize = "30px";
+
+                document.body.appendChild(logout_button);
+                document.body.appendChild(main_info);
+            });
+        }
+    </script>
+</html>
